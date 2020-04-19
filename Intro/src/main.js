@@ -53,7 +53,7 @@ Vue.component('product', {
         :style="{ backgroundColor: varient.varientColor}"
         v-on:mouseover="updateProduct(index)"> 
         </div>
-                        
+
         <p v-if="inventory > 10 || inventory <= 10 && inventory > 0">
             Available Sizes:
             <ul>
@@ -68,9 +68,6 @@ Vue.component('product', {
         <button v-on:click="addToCart"
         :class="{ disabledButton: inventory == 0 }">Add to Cart</button>
         <button @click="decrementFromCart">Decrement</button>
-        <div class="cart">
-            <p>Cart({{cart}})</p>
-        </div>
     </div>
 </div>`,
 data() {
@@ -95,14 +92,13 @@ data() {
                 varientImage: './assets/vmSocks-blue.jpg'
             }
         ],
-        sizes: ["XXL", "XL", "L", "M", "S"],
-        cart: 0
+        sizes: ["XXL", "XL", "L", "M", "S"]
     }
 },
 
  methods: {
     addToCart: function() {
-        this.cart += 1;
+        this.$emit('add-to-cart');
     },
 
     updateProduct: function(index) {
@@ -110,9 +106,7 @@ data() {
     },
     
     decrementFromCart: function() {
-        if (this.cart > 0) {
-            this.cart -= 1;
-        }       
+        this.$emit('remove-from-cart');
     }
  },
 
@@ -142,6 +136,20 @@ data() {
 var app = new Vue({
  el: '#app',
  data: {
-    premium: true
+    premium: true,
+    cart: 0
+ },
+ methods: {
+    addToCart() {
+        this.cart += 1;
+    },
+
+    // better to remove or add with Id
+    // https://codepen.io/GreggPollack/pen/JxgXvq
+    decrementFromCart() {
+        if (this.cart > 0) {
+            this.cart -= 1;
+        } 
+    }
  }
 })
