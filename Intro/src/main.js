@@ -98,7 +98,7 @@ data() {
 
  methods: {
     addToCart: function() {
-        this.$emit('add-to-cart');
+        this.$emit('add-to-cart', this.varients[this.selectedVarient].varientId);
     },
 
     updateProduct: function(index) {
@@ -106,7 +106,7 @@ data() {
     },
     
     decrementFromCart: function() {
-        this.$emit('remove-from-cart');
+        this.$emit('remove-from-cart', this.varients[this.selectedVarient].varientId);
     }
  },
 
@@ -137,19 +137,21 @@ var app = new Vue({
  el: '#app',
  data: {
     premium: true,
-    cart: 0
+    cart: []
  },
  methods: {
-    addToCart() {
-        this.cart += 1;
+    addToCart(id) {
+        this.cart.push(id);
     },
 
     // better to remove or add with Id
     // https://codepen.io/GreggPollack/pen/JxgXvq
-    decrementFromCart() {
-        if (this.cart > 0) {
-            this.cart -= 1;
-        } 
+    decrementFromCart(id) {
+        for(var i = this.cart.length - 1; i >= 0; i--) {
+            if (this.cart[i] === id) {
+                this.cart.splice(i, 1);
+            }
+        }
     }
  }
 })
