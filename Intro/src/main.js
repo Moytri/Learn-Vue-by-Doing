@@ -12,6 +12,86 @@ Vue.component('product-deatils', {
         </ul>`
 })
 
+Vue.component('product-review', {
+    template: `
+      <form class="review-form" @submit.prevent="onSubmit">
+
+        <p v-if="errors.length">
+            <b>Please correct the following error(s):</b>
+            <ul v-for="error in errors">
+                <li>{{ error }}</li>
+            </ul>
+        </p>
+        <p>
+          <label for="name">Name:</label>
+          <input id="name" v-model="name">
+        </p>
+        
+        <p>
+          <label for="review">Review:</label>      
+          <textarea id="review" v-model="review"></textarea>
+        </p>
+        
+        <p>
+          <label for="rating">Rating:</label>
+          <select id="rating" v-model.number="rating">
+            <option>5</option>
+            <option>4</option>
+            <option>3</option>
+            <option>2</option>
+            <option>1</option>
+          </select>
+        </p>
+        
+        <p>
+        Would you recommend this product?
+
+        </p>
+        <input type="radio" id="yes" value="Yes" v-model="recommend">
+        <label for="yes">Yes</label>
+        <br>
+        <input type="radio" id="no" value="No" v-model="recommend">
+        <label for="no">No</label>
+        <p>
+          <input type="submit" value="Submit">  
+        </p>    
+      
+    </form>`,
+
+    data() {
+        return {
+            name: null,
+            review: null,
+            rating: null,
+            errors: [],
+            recommend: null
+        }
+    },
+
+    methods:{
+        onSubmit() {
+            if (this.name && this.rating && this.review) {
+                let productReview = {
+                    name: this.name,
+                    review: this.review,
+                    rating: this.rating,
+                    recommend: this.recommend
+                }
+                this.$emit('review-submitted', productReview);
+    
+                this.name = null;
+                this.review = null;
+                this.rating = null;
+            }
+            else {
+                if (!this.name) this.errors.push("Name is Required.");
+                if (!this.review) this.errors.push("Review is Required.");
+                if (!this.rating) this.errors.push("Rating is Required.");
+            }
+        }
+    }
+})
+
 Vue.component('product', {
     props: {
         premium:{
@@ -69,6 +149,13 @@ Vue.component('product', {
         :class="{ disabledButton: inventory == 0 }">Add to Cart</button>
         <button @click="decrementFromCart">Decrement</button>
     </div>
+    <div>
+        <h2>Reviews</h2>
+        <ul v-for="review in reviews">
+           <li>Name: {{ review.name }} Review: {{ review.review }} Rating: {{ review.rating }} {{ review.recommend ? "Do you wan to recommend it: review.recommend" : null}}</li> 
+        </ul>
+    </div>
+    <product-review @review-submitted="addReview"></product-review>
 </div>`,
 data() {
     return {
@@ -92,7 +179,8 @@ data() {
                 varientImage: './assets/vmSocks-blue.jpg'
             }
         ],
-        sizes: ["XXL", "XL", "L", "M", "S"]
+        sizes: ["XXL", "XL", "L", "M", "S"],
+        reviews: []
     }
 },
 
@@ -107,6 +195,10 @@ data() {
     
     decrementFromCart: function() {
         this.$emit('remove-from-cart', this.varients[this.selectedVarient].varientId);
+    },
+
+    addReview: function(review) {
+        this.reviews.push(review);
     }
  },
 
