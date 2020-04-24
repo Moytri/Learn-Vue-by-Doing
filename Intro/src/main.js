@@ -1,3 +1,4 @@
+var eventBus = new Vue()
 
 Vue.component('product-deatils', {
     props: {
@@ -77,7 +78,7 @@ Vue.component('product-review', {
                     rating: this.rating,
                     recommend: this.recommend
                 }
-                this.$emit('review-submitted', productReview);
+                eventBus.$emit('review-submitted', productReview);
     
                 this.name = null;
                 this.review = null;
@@ -91,6 +92,47 @@ Vue.component('product-review', {
         }
     }
 })
+
+// Tab concept
+Vue.component('product-tabs', {
+    props: {
+      reviews: {
+        type: Array,
+        required: true
+      }
+    },
+    template: `
+      <div>      
+        <ul>
+          <span class="tabs" 
+                :class="{ activeTab: selectedTab === tab }"
+                v-for="(tab, index) in tabs"
+                @click="selectedTab = tab"
+                :key="tab"
+          >{{ tab }}</span>
+        </ul>
+        <div v-show="selectedTab === 'Reviews'">
+            <p v-if="!reviews.length">There are no reviews yet.</p>
+            <ul v-else>
+                <li v-for="(review, index) in reviews" :key="index">
+                <p>{{ review.name }}</p>
+                <p>Rating:{{ review.rating }}</p>
+                <p>{{ review.review }}</p>
+                </li>
+            </ul>
+        </div>
+        <div v-show="selectedTab === 'Make a Review'">
+            <product-review></product-review>
+        </div>              
+      </div>   
+    `,
+    data() {
+      return {
+        tabs: ['Reviews', 'Make a Review'],
+        selectedTab: 'Reviews'
+      }
+    }
+  })
 
 Vue.component('product', {
     props: {
@@ -149,13 +191,8 @@ Vue.component('product', {
         :class="{ disabledButton: inventory == 0 }">Add to Cart</button>
         <button @click="decrementFromCart">Decrement</button>
     </div>
-    <div>
-        <h2>Reviews</h2>
-        <ul v-for="review in reviews">
-           <li>Name: {{ review.name }} Review: {{ review.review }} Rating: {{ review.rating }} {{ review.recommend ? "Do you wan to recommend it: review.recommend" : null}}</li> 
-        </ul>
-    </div>
-    <product-review @review-submitted="addReview"></product-review>
+
+    <product-tabs :reviews="reviews"></product-tabs>
 </div>`,
 data() {
     return {
@@ -196,11 +233,13 @@ data() {
     decrementFromCart: function() {
         this.$emit('remove-from-cart', this.varients[this.selectedVarient].varientId);
     },
-
-    addReview: function(review) {
-        this.reviews.push(review);
-    }
  },
+
+mounted() {
+    eventBus.$on('review-submitted', productReview => {
+    this.reviews.push(productReview)
+    })
+},
 
  // like a calculated and they are cached
  // for the expessive operation computed is better than method 
@@ -218,6 +257,7 @@ data() {
     }
  }
 })
+
 
 // vue instance is the root/heart of the vue application
 // it is created by passing an options object into it
