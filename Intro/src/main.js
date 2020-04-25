@@ -134,6 +134,50 @@ Vue.component('product-tabs', {
     }
   })
 
+Vue.component('product-body-tabs', {
+    props: {
+        details: {
+            type: Array,
+            required: true
+        },
+        premium: {
+            type: Boolean,
+            default: false
+        }
+    },
+    template: `
+    <div>      
+        <ul>
+        <span class="tabs" 
+                :class="{ activeTab: selectedTab === tab }"
+                v-for="(tab, index) in tabs"
+                @click="selectedTab = tab"
+                :key="tab"
+        >{{ tab }}</span>
+        </ul>
+
+        <div v-show="selectedTab === 'Details'">
+            <product-deatils :details="details"></product-deatils>
+        </div>
+
+        <div v-show="selectedTab === 'Shipping'">
+            <p>Shipping: {{ shipping }}</p>
+        </div>
+    </div>   
+    `,
+    data() {
+        return {
+            tabs: ['Shipping', 'Details'],
+            selectedTab: 'Shipping'
+        }
+    },
+    computed: {
+        shipping() {
+            return this.premium ? "Free" : "2.99"
+        }
+    }
+})
+
 Vue.component('product', {
     props: {
         premium:{
@@ -156,8 +200,9 @@ Vue.component('product', {
         <!-- {{ }} is the expression -->
         <h1>{{ title }}</h1>
         <h2>{{ description }}</h2>
-        <p>Shipping: {{ shipping }}</p>
-
+        
+        <product-body-tabs :details="details" :premium="premium"></product-body-tabs>
+        
         <!-- Conditionally Rendering v-if and v-show directive
         v-if is conditionally add and remove element in the dom
         on contrary v-show is not removing and adding element in the dom
@@ -165,8 +210,6 @@ Vue.component('product', {
         <p v-if="inventory > 10">In Stock</p>
         <p v-else-if="inventory<= 10 && inventory > 0">Almost Sold</p>
         <p v-else>Out of Stock</p>
-
-        <product-deatils :details="details"></product-deatils>
 
         <!--Style Binding-->
         <div v-for="(varient, index) in varients" 
@@ -232,7 +275,7 @@ data() {
     
     decrementFromCart: function() {
         this.$emit('remove-from-cart', this.varients[this.selectedVarient].varientId);
-    },
+    }
  },
 
 mounted() {
@@ -251,9 +294,6 @@ mounted() {
     },
     image() {
         return this.varients[this.selectedVarient].varientImage;
-    },
-    shipping() {
-        return this.premium ? "Free" : "2.99"
     }
  }
 })
